@@ -37,15 +37,39 @@
   }
 }
 
-.grid {
-  display: grid;
-  overflow: scroll;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  grid-gap: 12px;
-  max-height: 400px;
+
+.column {
+  display: inline-block;
+  vertical-align: top;
+  width: 25%;
+  min-width: 300px;
 }
 
+.wrapper-container {
+  overflow-x: visible;
+  white-space: nowrap;
+}
 .item {
+  display: inline;
   min-height: 200px;
   background-color: #eee;
+}
+
+.card-wrapper{
+  margin: 10px;
+  background: #eeeeee;
+  border-style: solid;
+  border-width: thin;
+}
+
+.card-body {
+  display: inline;
+  white-space: normal;
+}
+
+.card-modal {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
