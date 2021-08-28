@@ -1,5 +1,7 @@
 import {Component} from "react";
 import Card from "./Card";
+import {Button} from "react-bootstrap";
+import Draggable from "react-draggable";
 
 export default class Column extends Component{
     constructor(props) {
@@ -10,9 +12,13 @@ export default class Column extends Component{
         }
 
         this.handleChange = this.handleChange.bind(this);
+        this.handleClick = this.handleClick.bind(this);
         this.saveColumnName = this.saveColumnName.bind(this);
     }
 
+    handleClick(){
+     this.props.addNewCard(this.state.colName)
+    }
 
     handleDoubleClick(colName){
         this.setState( {editColName: true});
@@ -26,7 +32,6 @@ export default class Column extends Component{
         if(event.key === "Enter"){
             this.props.changeColName(this.props.name, this.state.colName)
             this.setState( {editColName: false});
-            this.forceUpdate()
         }
     }
 
@@ -35,7 +40,7 @@ export default class Column extends Component{
         if(this.state.editColName){
             return(<input name="colName" type="text" value={this.state.colName} onChange={this.handleChange} onKeyDown={this.saveColumnName}/>)
         }else{
-            return(<h1 onDoubleClick={() => this.handleDoubleClick()}>{this.state.colName}</h1>)
+            return(<Draggable axis="x"><h1 id="column-handle" onDoubleClick={() => this.handleDoubleClick()}>{this.state.colName}</h1></Draggable>)
         }
     }
 
@@ -48,15 +53,23 @@ export default class Column extends Component{
     }
 
 
+
+
     render() {
         return (
-            <div class="column container">
-                {this.handleColChange()}
-                <div class=".grid">
-                    {this.getCards()}
-                </div>
 
-            </div>
+            <>
+                <div class="column container">
+                        {this.handleColChange()}
+                    <div class=".grid">
+                        {this.getCards()}
+                        <Button variant="primary" onClick={() => this.handleClick()}>
+                            Add Card
+                        </Button>
+                    </div>
+                </div>
+            </>
+
         )
     }
 }

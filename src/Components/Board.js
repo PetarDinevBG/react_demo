@@ -1,25 +1,27 @@
 import {Component} from "react";
 import Column from './Column.js'
 import {Button, Modal} from "react-bootstrap";
+
 //TODO Change data structure for columns and cards
 //TODO fix case with duplicate column names
-let colNames = ["To Do", "Progress", "Completed", "Extra"]
+//TODO separate CardView and Board
 let cards = []
+let cardCounter = 0
 
 export default class Board extends Component {
     constructor(props){
         super(props);
-        this.generateTestCards(15)
-        console.log(cards)
         this.state = {
             showBoard: false,
             cardTitle: "",
             cardDesc:"",
             cardHistory:"",
             cardColumn: "",
-            cardViewed: 0
+            cardViewed: 0,
+            colNames : ["To Do", "Progress", "Completed", "Extra"],
+            newCard : false
         }
-
+        this.generateTestCards(15)
         this.handleChange = this.handleChange.bind(this);
     }
 
@@ -28,13 +30,22 @@ export default class Board extends Component {
             showBoard: false,
             cardViewed: 0
         });
+        if(this.state.newCard === true){
+            cards.pop()
+        }
+        this.setState({newCard: false})
     }
 
     handleSave(){
+        if(this.state.newCard === false) {
+            cards[this.state.cardViewed]["History"].push([cards[this.state.cardViewed]["Title"], cards[this.state.cardViewed]["Desc"], this.state.cardColumn])
+        }
         cards[this.state.cardViewed]["Title"] = this.state.cardTitle
         cards[this.state.cardViewed]["Desc"] = this.state.cardDesc
-        cards[this.state.cardViewed]["History"].push([this.state.cardTitle, this.state.cardDesc, this.state.cardColumn])
-        this.handleClose()
+        this.setState({
+            newCard: false,
+            showBoard: false,
+            cardViewed: 0});
     }
 
     handleChange(event){
@@ -54,29 +65,54 @@ export default class Board extends Component {
                }
            }
        }
-        colNames[colNames.indexOf(column)] = newName
+       let colNamesCopy = this.state.colNames.slice();
+        colNamesCopy[colNamesCopy.indexOf(column)] = newName
+       this.setState({
+           colNames : colNamesCopy
+       })
     }
 
     generateTestCards(n){
         cards = []
         if(cards.length <= 0){
             for (let i=0; i<n;i++){
-                cards.push({"cardID": i,"column": colNames[Math.floor(Math.random() * colNames.length)], "Title": "Card" + i, "Desc": "This is Card"+ i, "History": []})
+                cards.push({"cardID": i,"column": this.state.colNames[Math.floor(Math.random() * this.state.colNames.length)],
+                    "Title": "Card" + i, "Desc": "This is Card"+ i, "History": []})
             }
         }
+        cardCounter = cards.length
         return cards
     }
 
+    //TODO fix card ID numbering
+    addNewCard(column){
+        this.setState({newCard: true})
+        cards.push({"cardID": cardCounter,"column": column,
+            "Title": "New Card " + cardCounter, "Desc": "New Card desc "+ cardCounter, "History": []})
+        this.goToCardView(cardCounter)
+        cardCounter++;
+    }
+    //TODO fix card ID numbering
     goToCardView(cardID){
-        console.log("Card View - Board" + cardID);
+        const cardPosition = this.getCardPosition(cardID);
         this.setState({
+            cardTitle: cards[cardPosition]["Title"],
             showBoard: true,
-            cardTitle: cards[cardID]["Title"],
-            cardDesc: cards[cardID]["Desc"],
-            cardHistory: cards[cardID]["History"],
-            cardViewed: cardID,
-            cardColumn: cards[cardID]["column"]
+            cardDesc: cards[cardPosition]["Desc"],
+            cardHistory: cards[cardPosition]["History"],
+            cardViewed: cardPosition,
+            cardColumn: cards[cardPosition]["column"]
         });
+    }
+
+    getCardPosition(cardID){
+        for(let i=0; i<cards.length; i++){
+            if(cards[i].cardID === cardID){
+                return i;
+            }
+        }
+        console.log("Card Doesn't exist, check code!")
+        return 0;
     }
 
     getColCards(colName){
@@ -91,18 +127,34 @@ export default class Board extends Component {
 
     getColumns(){
         let columns = []
-        for(let i=0; i<colNames.length; i++) {
-            columns.push(<Column name={colNames[i]} cards={this.getColCards(colNames[i])} goToCardView={(cardID) => this.goToCardView(cardID)} changeColName={(column, newName) => this.changeColumnName(column, newName)}/>)
+        for(let i=0; i<this.state.colNames.length; i++) {
+            columns.push(<Column name={this.state.colNames[i]} cards={this.getColCards(this.state.colNames[i])}
+                                 goToCardView={(cardID) => this.goToCardView(cardID)}
+                                 changeColName={(column, newName) => this.changeColumnName(column, newName)}
+                                 addNewCard={(column) => this.addNewCard(column)}/>)
         }
         return columns
     }
+
+    addNewColumn(){
+        if(!this.state.colNames.includes("New Column")){
+            this.state.colNames.push("New Column")
+        }
+        this.forceUpdate()
+    }
+
     render() {
         return (
             <>
-            <div className="wrapper-container" style={{ display: !this.state.showBoard ? "block" : "none" }}>
-                {this.getColumns()}
+                <div className="wrapper-container" style={{ display: !this.state.showBoard ? "block" : "none" }}>
+                    <div className="add-column-wrapper">
+                        <Button variant="primary" onClick={() => this.addNewColumn()}>
+                            Add Column
+                        </Button>
+                    </div>
+                    {this.getColumns()}
 
-            </div>
+                </div>
             <Modal show={this.state.showBoard} onHide={() => this.handleClose()}>
                 <Modal.Header>
                     <Modal.Title><input name="cardTitle" type="text" value={this.state.cardTitle} onChange={this.handleChange}/></Modal.Title>

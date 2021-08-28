@@ -37,7 +37,6 @@
   }
 }
 
-
 .column {
   display: inline-block;
   vertical-align: top;
@@ -48,6 +47,7 @@
 .wrapper-container {
   overflow-x: visible;
   white-space: nowrap;
+  display: inline-block;
 }
 .item {
   display: inline;

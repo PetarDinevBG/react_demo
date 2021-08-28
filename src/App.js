@@ -4,12 +4,12 @@ import Board from "./Components/Board"
 
 
 
-
-
 class App extends Component {
+
+
   render() {
       return (
-        <Board />
+          <Board />
     )
   }
 }
