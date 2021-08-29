@@ -47,7 +47,8 @@ export default class Column extends Component{
     getCards(){
         const cards = []
         for(let i=0; i < this.props.cards.length; i++){
-            cards.push(<Card cardInfo={this.props.cards[i]} goToCardView={this.props.goToCardView}/>)
+            cards.push(<Card cardInfo={this.props.cards[i]} goToCardView={this.props.goToCardView}
+                             deleteCard={(cardID) => this.props.deleteCard(cardID)}/>)
         }
         return cards;
     }
@@ -60,6 +61,9 @@ export default class Column extends Component{
 
             <>
                 <div class="column container">
+                    <Button variant="primary" onClick={() => this.props.removeColumn(this.state.colName)}>
+                        Remove Column
+                    </Button>
                         {this.handleColChange()}
                     <div class=".grid">
                         {this.getCards()}

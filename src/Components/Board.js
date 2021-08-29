@@ -92,6 +92,13 @@ export default class Board extends Component {
         this.goToCardView(cardCounter)
         cardCounter++;
     }
+
+    deleteCard(cardID){
+        //TODO Perhaps move cards into the state or as prop
+        cards = cards.filter(e => e.cardID !== cardID);
+        this.forceUpdate();
+    }
+
     //TODO fix card ID numbering
     goToCardView(cardID){
         const cardPosition = this.getCardPosition(cardID);
@@ -128,10 +135,12 @@ export default class Board extends Component {
     getColumns(){
         let columns = []
         for(let i=0; i<this.state.colNames.length; i++) {
-            columns.push(<Column name={this.state.colNames[i]} cards={this.getColCards(this.state.colNames[i])}
+            columns.push(<Column key={this.state.colNames[i]} name={this.state.colNames[i]} cards={this.getColCards(this.state.colNames[i])}
                                  goToCardView={(cardID) => this.goToCardView(cardID)}
                                  changeColName={(column, newName) => this.changeColumnName(column, newName)}
-                                 addNewCard={(column) => this.addNewCard(column)}/>)
+                                 addNewCard={(column) => this.addNewCard(column)}
+                                 removeColumn={(column) => this.removeColumn(column)}
+                                 deleteCard={(cardID) => this.deleteCard(cardID)}/>)
         }
         return columns
     }
@@ -141,6 +150,20 @@ export default class Board extends Component {
             this.state.colNames.push("New Column")
         }
         this.forceUpdate()
+    }
+
+    removeColumn(column){
+        let newColumns = this.state.colNames.filter(e => e !== column);
+        console.log(newColumns)
+        this.setState({colNames: newColumns});
+        let newCards = []
+        for (let i=0; i<cards.length;i++){
+            if(cards[i]["column"] !== column){
+                newCards.push(cards[i])
+            }
+        }
+        cards = newCards;
+        console.log(this.state.colNames)
     }
 
     render() {

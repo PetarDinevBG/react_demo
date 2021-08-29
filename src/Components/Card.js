@@ -1,5 +1,6 @@
 import {Component} from "react";
 import Draggable from "react-draggable";
+import {Button} from "react-bootstrap";
 // Change test vars
 
 class Card extends Component{
@@ -18,6 +19,9 @@ class Card extends Component{
                         <div>
                             {this.props.cardInfo.History}
                         </div>
+                        <Button variant="primary" onClick={() => this.props.deleteCard(this.props.cardInfo.cardID)}>
+                            Delete
+                        </Button>
                     </div>
                 </div>
             </Draggable>
