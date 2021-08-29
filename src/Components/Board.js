@@ -4,13 +4,16 @@ import {Button, Modal} from "react-bootstrap";
 
 //TODO Change data structure for columns and cards
 //TODO fix case with duplicate column names
-//TODO separate CardView and Board
+
 let cards = []
+const initialColumns = ["To Do", "Progress", "Completed", "Extra"]
 let cardCounter = 0
 
 export default class Board extends Component {
+    //TODO separate CardView and Board
     constructor(props){
         super(props);
+        this.generateTestCards(15);
         this.state = {
             showBoard: false,
             cardTitle: "",
@@ -18,10 +21,11 @@ export default class Board extends Component {
             cardHistory:"",
             cardColumn: "",
             cardViewed: 0,
-            colNames : ["To Do", "Progress", "Completed", "Extra"],
-            newCard : false
+            colNames : initialColumns,
+            newCard : false,
+            filter : "",
+            stateCards: cards
         }
-        this.generateTestCards(15)
         this.handleChange = this.handleChange.bind(this);
     }
 
@@ -45,11 +49,37 @@ export default class Board extends Component {
         this.setState({
             newCard: false,
             showBoard: false,
-            cardViewed: 0});
+            cardViewed: 0,
+            stateCards : this.filterCards(this.state.filter)});
+    }
+
+    handleUndo(){
+        if(this.state.newCard === true){
+            this.handleClose()
+        }else if(cards[this.state.cardViewed].History.length !== 0){
+            const [title, desc, column] = cards[this.state.cardViewed]["History"].pop()
+            cards[this.state.cardViewed]["Title"] = title
+            cards[this.state.cardViewed]["Desc"] = desc
+            cards[this.state.cardViewed]["column"] = column
+        }
+        console.log(cards)
+        this.setState({
+            newCard: false,
+            showBoard: false,
+            cardViewed: 0,
+            stateCards : this.filterCards(this.state.filter)});
+    }
+
+    filterCards(filterWord){
+        return cards.filter(e => e.Title.startsWith(filterWord));
     }
 
     handleChange(event){
-        this.setState({[event.target.name]: event.target.value});
+        this.setState({
+            [event.target.name]: event.target.value,
+            stateCards : this.filterCards(event.target.value)
+        });
+
     }
 
     //TODO Fix ugly method
@@ -76,7 +106,7 @@ export default class Board extends Component {
         cards = []
         if(cards.length <= 0){
             for (let i=0; i<n;i++){
-                cards.push({"cardID": i,"column": this.state.colNames[Math.floor(Math.random() * this.state.colNames.length)],
+                cards.push({"cardID": i,"column": initialColumns[Math.floor(Math.random() * initialColumns.length)],
                     "Title": "Card" + i, "Desc": "This is Card"+ i, "History": []})
             }
         }
@@ -96,7 +126,7 @@ export default class Board extends Component {
     deleteCard(cardID){
         //TODO Perhaps move cards into the state or as prop
         cards = cards.filter(e => e.cardID !== cardID);
-        this.forceUpdate();
+        this.setState({stateCards : cards});
     }
 
     //TODO fix card ID numbering
@@ -124,9 +154,9 @@ export default class Board extends Component {
 
     getColCards(colName){
         let colCards = []
-        for (let i=0; i<cards.length;i++){
-            if(cards[i]["column"] === colName){
-                colCards.push(cards[i])
+        for (let i=0; i<this.state.stateCards.length;i++){
+            if(this.state.stateCards[i]["column"] === colName){
+                colCards.push(this.state.stateCards[i])
             }
         }
         return colCards;
@@ -148,14 +178,14 @@ export default class Board extends Component {
 
     addNewColumn(){
         if(!this.state.colNames.includes("New Column")){
-            this.state.colNames.push("New Column")
+            let colNamesCopy = this.state.colNames.slice();
+            colNamesCopy.push("New Column")
+            this.setState({colNames: colNamesCopy})
         }
-        this.forceUpdate()
     }
 
     removeColumn(column){
         let newColumns = this.state.colNames.filter(e => e !== column);
-        console.log(newColumns)
         this.setState({colNames: newColumns});
         let newCards = []
         for (let i=0; i<cards.length;i++){
@@ -164,7 +194,6 @@ export default class Board extends Component {
             }
         }
         cards = newCards;
-        console.log(this.state.colNames)
     }
 
     moveCard(cardID, steps){
@@ -178,9 +207,9 @@ export default class Board extends Component {
         let newColumnPosition = oldColumnPosition + steps;
         if(newColumnPosition >= 0 && newColumnPosition <= this.state.colNames.length - 1){
             cards[cardIndex].column = this.state.colNames[newColumnPosition];
-            cards[cardIndex]["History"].push([cards[this.state.cardViewed]["Title"], cards[this.state.cardViewed]["Desc"], this.state.colNames[oldColumnPosition]])
+            cards[cardIndex]["History"].push([cards[cardIndex]["Title"], cards[cardIndex]["Desc"], this.state.colNames[oldColumnPosition]])
         }
-        this.forceUpdate();
+        this.setState({stateCards : this.filterCards(this.state.filter)});
     }
 
     render() {
@@ -191,21 +220,26 @@ export default class Board extends Component {
                         <Button variant="primary" onClick={() => this.addNewColumn()}>
                             Add Column
                         </Button>
+                        Filter:
+                        <input name="filter" type="text" value={this.state.filter} onChange={this.handleChange}/>
                     </div>
                     {this.getColumns()}
 
                 </div>
             <Modal show={this.state.showBoard} onHide={() => this.handleClose()}>
                 <Modal.Header>
-                    <Modal.Title><input name="cardTitle" type="text" value={this.state.cardTitle} onChange={this.handleChange}/></Modal.Title>
+                    <Modal.Title><input  name="cardTitle" type="text" value={this.state.cardTitle} onChange={this.handleChange}/></Modal.Title>
                 </Modal.Header>
-                <Modal.Body><input name="cardDesc" type="text" value={this.state.cardDesc} onChange={this.handleChange}/></Modal.Body>
+                <Modal.Body><textarea name="cardDesc" type="text" value={this.state.cardDesc} onChange={this.handleChange}/></Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => this.handleClose()}>
                         Close
                     </Button>
                     <Button variant="primary" onClick={() => this.handleSave()}>
                         Save Changes
+                    </Button>
+                    <Button variant="primary" onClick={() => this.handleUndo()}>
+                        Undo Last Change
                     </Button>
                 </Modal.Footer>
             </Modal>

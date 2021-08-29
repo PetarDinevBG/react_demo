@@ -5,6 +5,7 @@ import {Button} from "react-bootstrap";
 
 class Card extends Component{
 
+    //TODO Max height for description div
     render(){
         return(
             <Draggable>
@@ -13,7 +14,7 @@ class Card extends Component{
                         <h3>
                             {this.props.cardInfo["Title"]}
                         </h3>
-                        <div>
+                        <div style={{whiteSpace: "pre-wrap"}}>
                             {this.props.cardInfo["Desc"]}
                         </div>
                         <div>
