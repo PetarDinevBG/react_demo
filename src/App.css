@@ -40,8 +40,8 @@
 .column {
   display: inline-block;
   vertical-align: top;
-  width: 25%;
-  min-width: 300px;
+  width: 300px;
+  text-align: center;
 }
 
 .wrapper-container {
@@ -72,4 +72,27 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
+}
+
+.card-history-list li {
+  display: inline;
+  border-style: solid;
+  border-width: thin;
+  max-width: 200px;
+}
+
+.column-names li {
+  display: inline;
+  border-style: solid;
+  border-width: medium;
+}
+
+h1 {
+  text-align: center;
+}
+
+.body-wrapper {
+  background-size: cover;
+  background-repeat:   no-repeat;
+  background-attachment: scroll;
 }

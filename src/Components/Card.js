@@ -1,14 +1,19 @@
 import {Component} from "react";
 import Draggable from "react-draggable";
 import {Button} from "react-bootstrap";
-// Change test vars
 
 class Card extends Component{
+    constructor(props) {
+        super(props);
+        this.state = {
+            position : {x:0, y:0}
+        }
+    }
 
     //TODO Max height for description div
     render(){
         return(
-            <Draggable>
+            <Draggable position={this.state.position}>
                 <div className="card-wrapper">
                     <div className="card-body" onDoubleClick={() => this.props.goToCardView(this.props.cardInfo["cardID"])}>
                         <h3>
@@ -17,9 +22,12 @@ class Card extends Component{
                         <div style={{whiteSpace: "pre-wrap"}}>
                             {this.props.cardInfo["Desc"]}
                         </div>
+
                         <div>
-                            {this.props.cardInfo.History}
+                            Tags:
+                            <strong>{this.props.cardInfo.Tags}</strong>
                         </div>
+
                         <Button variant="primary" onClick={() => this.props.moveCard(this.props.cardInfo.cardID, -1)}>
                             Move Left
                         </Button>

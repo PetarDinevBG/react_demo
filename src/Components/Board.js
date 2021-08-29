@@ -1,6 +1,7 @@
 import {Component} from "react";
 import Column from './Column.js'
 import {Button, Modal} from "react-bootstrap";
+import CardHistory from "./CardHistory";
 
 //TODO Change data structure for columns and cards
 //TODO fix case with duplicate column names
@@ -8,6 +9,8 @@ import {Button, Modal} from "react-bootstrap";
 let cards = []
 const initialColumns = ["To Do", "Progress", "Completed", "Extra"]
 let cardCounter = 0
+//TODO Change hardcoded column width later
+let columnWidth = 300
 
 export default class Board extends Component {
     //TODO separate CardView and Board
@@ -21,10 +24,11 @@ export default class Board extends Component {
             cardHistory:"",
             cardColumn: "",
             cardViewed: 0,
+            cardTags: "",
             colNames : initialColumns,
             newCard : false,
             filter : "",
-            stateCards: cards
+            stateCards: cards,
         }
         this.handleChange = this.handleChange.bind(this);
     }
@@ -46,6 +50,7 @@ export default class Board extends Component {
         }
         cards[this.state.cardViewed]["Title"] = this.state.cardTitle
         cards[this.state.cardViewed]["Desc"] = this.state.cardDesc
+        cards[this.state.cardViewed]["Tags"] = this.state.cardTags.split(" ")
         this.setState({
             newCard: false,
             showBoard: false,
@@ -71,7 +76,19 @@ export default class Board extends Component {
     }
 
     filterCards(filterWord){
-        return cards.filter(e => e.Title.startsWith(filterWord));
+        let filteredCards = []
+        for(let i=0; i<cards.length; i++){
+            if(cards[i].Title.startsWith(filterWord)){
+                filteredCards.push(cards[i]);
+            }else{
+                for(let j=0; j<cards[i].Tags.length; j++){
+                    if(cards[i].Tags[j].startsWith(filterWord)){
+                        filteredCards.push(cards[i]);
+                    }
+                }
+            }
+        }
+        return filteredCards
     }
 
     handleChange(event){
@@ -81,15 +98,28 @@ export default class Board extends Component {
         });
 
     }
+    //TODO
+    dragColumn(width, columnName){
+        const newColPosition = width/columnWidth;
+        let newColNames = this.state.colNames.filter(e => e !== columnName)
+        newColNames.splice(newColPosition, 0, columnName);
+        this.setState({colNames : newColNames});
+    }
 
     //TODO Fix ugly method
     changeColumnName(column, newName){
+        let i = 1;
+        let suffix = ""
+        while(this.state.colNames.includes(newName + suffix)){
+            suffix = " (" + i + ")"
+            i++;
+        }
+        newName = newName + suffix
        for(let i=0; i<cards.length;i++){
            if(cards[i].column === column) {
                cards[i].column = newName;
            }
            for(let j=0; j<cards[i].History.length;j++){
-               console.log(cards[i]["History"][j][2])
                if(cards[i]["History"][j][2] === column){
                    cards[i]["History"][j] = [cards[i]["History"][j][0], cards[i]["History"][j][1], newName];
                }
@@ -107,7 +137,7 @@ export default class Board extends Component {
         if(cards.length <= 0){
             for (let i=0; i<n;i++){
                 cards.push({"cardID": i,"column": initialColumns[Math.floor(Math.random() * initialColumns.length)],
-                    "Title": "Card" + i, "Desc": "This is Card"+ i, "History": []})
+                    "Title": "Card" + i, "Desc": "This is Card"+ i, "History": [], "Tags": []})
             }
         }
         cardCounter = cards.length
@@ -118,7 +148,7 @@ export default class Board extends Component {
     addNewCard(column){
         this.setState({newCard: true})
         cards.push({"cardID": cardCounter,"column": column,
-            "Title": "New Card " + cardCounter, "Desc": "New Card desc "+ cardCounter, "History": []})
+            "Title": "New Card " + cardCounter, "Desc": "New Card desc "+ cardCounter, "History": [], "Tags": []})
         this.goToCardView(cardCounter)
         cardCounter++;
     }
@@ -132,13 +162,18 @@ export default class Board extends Component {
     //TODO fix card ID numbering
     goToCardView(cardID){
         const cardPosition = this.getCardPosition(cardID);
+        let cardTagsString = "";
+        for(let i=0; i<cards[cardPosition].Tags.length; i++){
+            cardTagsString = cardTagsString + cards[cardPosition].Tags[i] + "";
+        }
         this.setState({
             cardTitle: cards[cardPosition]["Title"],
             showBoard: true,
             cardDesc: cards[cardPosition]["Desc"],
             cardHistory: cards[cardPosition]["History"],
             cardViewed: cardPosition,
-            cardColumn: cards[cardPosition]["column"]
+            cardColumn: cards[cardPosition]["column"],
+            cardTags: cardTagsString
         });
     }
 
@@ -148,7 +183,6 @@ export default class Board extends Component {
                 return i;
             }
         }
-        console.log("Card Doesn't exist, check code!")
         return 0;
     }
 
@@ -171,17 +205,24 @@ export default class Board extends Component {
                                  addNewCard={(column) => this.addNewCard(column)}
                                  removeColumn={(column) => this.removeColumn(column)}
                                  deleteCard={(cardID) => this.deleteCard(cardID)}
-                                 moveCard={(cardID, steps) => this.moveCard(cardID, steps)}/>)
+                                 moveCard={(cardID, steps) => this.moveCard(cardID, steps)}
+                                 dragColumn={(width, columnName) => this.dragColumn(width, columnName)}/>)
         }
         return columns
     }
 
     addNewColumn(){
-        if(!this.state.colNames.includes("New Column")){
-            let colNamesCopy = this.state.colNames.slice();
-            colNamesCopy.push("New Column")
-            this.setState({colNames: colNamesCopy})
+        let i = 1;
+        let suffix = ""
+        let colName = "New Column"
+        while(this.state.colNames.includes(colName + suffix)){
+            suffix = " (" + i + ")"
+            i++;
         }
+        colName = colName + suffix
+        let colNamesCopy = this.state.colNames.slice();
+        colNamesCopy.push(colName)
+        this.setState({colNames: colNamesCopy})
     }
 
     removeColumn(column){
@@ -214,7 +255,10 @@ export default class Board extends Component {
 
     render() {
         return (
-            <>
+            <div className="body-wrapper" >
+                <header>
+                    <h1>Kanban Board</h1>
+                </header>
                 <div className="wrapper-container" style={{ display: !this.state.showBoard ? "block" : "none" }}>
                     <div className="add-column-wrapper">
                         <Button variant="primary" onClick={() => this.addNewColumn()}>
@@ -228,9 +272,18 @@ export default class Board extends Component {
                 </div>
             <Modal show={this.state.showBoard} onHide={() => this.handleClose()}>
                 <Modal.Header>
-                    <Modal.Title><input  name="cardTitle" type="text" value={this.state.cardTitle} onChange={this.handleChange}/></Modal.Title>
+                    <Modal.Title>Card Title: <input  name="cardTitle" value={this.state.cardTitle} onChange={this.handleChange}/></Modal.Title>
                 </Modal.Header>
-                <Modal.Body><textarea name="cardDesc" type="text" value={this.state.cardDesc} onChange={this.handleChange}/></Modal.Body>
+                <Modal.Body>Card Description: <textarea name="cardDesc" value={this.state.cardDesc} onChange={this.handleChange}/>                        <div>
+                    Card History:
+                    <br/>
+                    {cards.length!==0 && <CardHistory history={cards[this.state.cardViewed].History}/>}
+                    <div>
+                        Card Tags:
+                        <textarea name="cardTags" value={this.state.cardTags} onChange={this.handleChange}/>
+                    </div>
+                </div>
+                </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => this.handleClose()}>
                         Close
@@ -243,7 +296,7 @@ export default class Board extends Component {
                     </Button>
                 </Modal.Footer>
             </Modal>
-        </>
+        </div>
         )
     }
 }
