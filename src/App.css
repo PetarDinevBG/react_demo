@@ -96,3 +96,8 @@ h1 {
   background-repeat:   no-repeat;
   background-attachment: scroll;
 }
+
+.add-column-wrapper {
+  text-align: center;
+  padding-bottom: 20px;
+}

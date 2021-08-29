@@ -79,10 +79,10 @@ export default class Column extends Component{
                     </Button>
                         {this.handleColChange()}
                     <div className=".grid">
-                        {this.getCards()}
                         <Button variant="primary" onClick={() => this.handleClick()}>
                             Add Card
                         </Button>
+                        {this.getCards()}
                     </div>
                 </div>
             </>

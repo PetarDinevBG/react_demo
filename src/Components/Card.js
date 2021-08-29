@@ -10,6 +10,14 @@ class Card extends Component{
         }
     }
 
+    getTagString(tags){
+        let cardTagsString = "";
+        for(let i=0; i<tags.length; i++){
+            cardTagsString = cardTagsString + tags[i] + " ";
+        }
+        return cardTagsString
+    }
+
     //TODO Max height for description div
     render(){
         return(
@@ -25,7 +33,7 @@ class Card extends Component{
 
                         <div>
                             Tags:
-                            <strong>{this.props.cardInfo.Tags}</strong>
+                            <strong>{this.getTagString(this.props.cardInfo.Tags)}</strong>
                         </div>
 
                         <Button variant="primary" onClick={() => this.props.moveCard(this.props.cardInfo.cardID, -1)}>

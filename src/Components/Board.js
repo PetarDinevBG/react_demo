@@ -7,7 +7,7 @@ import CardHistory from "./CardHistory";
 //TODO fix case with duplicate column names
 
 let cards = []
-const initialColumns = ["To Do", "Progress", "Completed", "Extra"]
+const initialColumns = ["To Do", "In Progress", "Done"]
 let cardCounter = 0
 //TODO Change hardcoded column width later
 let columnWidth = 300
@@ -16,7 +16,7 @@ export default class Board extends Component {
     //TODO separate CardView and Board
     constructor(props){
         super(props);
-        this.generateTestCards(15);
+        this.generateTestCards(8);
         this.state = {
             showBoard: false,
             cardTitle: "",
@@ -48,6 +48,7 @@ export default class Board extends Component {
         if(this.state.newCard === false) {
             cards[this.state.cardViewed]["History"].push([cards[this.state.cardViewed]["Title"], cards[this.state.cardViewed]["Desc"], this.state.cardColumn])
         }
+
         cards[this.state.cardViewed]["Title"] = this.state.cardTitle
         cards[this.state.cardViewed]["Desc"] = this.state.cardDesc
         cards[this.state.cardViewed]["Tags"] = this.state.cardTags.split(" ")
@@ -78,11 +79,11 @@ export default class Board extends Component {
     filterCards(filterWord){
         let filteredCards = []
         for(let i=0; i<cards.length; i++){
-            if(cards[i].Title.startsWith(filterWord)){
+            if(cards[i].Title.toLowerCase().startsWith(filterWord.toLowerCase())){
                 filteredCards.push(cards[i]);
             }else{
                 for(let j=0; j<cards[i].Tags.length; j++){
-                    if(cards[i].Tags[j].startsWith(filterWord)){
+                    if(cards[i].Tags[j].toLowerCase().startsWith(filterWord.toLowerCase())){
                         filteredCards.push(cards[i]);
                     }
                 }
@@ -133,11 +134,11 @@ export default class Board extends Component {
     }
 
     generateTestCards(n){
-        cards = []
+        const randomTags = ["cat", "dog", "mouse"]
         if(cards.length <= 0){
             for (let i=0; i<n;i++){
                 cards.push({"cardID": i,"column": initialColumns[Math.floor(Math.random() * initialColumns.length)],
-                    "Title": "Card" + i, "Desc": "This is Card"+ i, "History": [], "Tags": []})
+                    "Title": "Test Card " + i, "Desc": "This is a sample description for card "+ i, "History": [], "Tags": [randomTags[i%3]]})
             }
         }
         cardCounter = cards.length
@@ -159,13 +160,17 @@ export default class Board extends Component {
         this.setState({stateCards : cards});
     }
 
+    getTagString(cardPosition){
+        let cardTagsString = "";
+        for(let i=0; i<cards[cardPosition].Tags.length; i++){
+            cardTagsString = cardTagsString + cards[cardPosition].Tags[i] + " ";
+        }
+        return cardTagsString
+    }
+
     //TODO fix card ID numbering
     goToCardView(cardID){
         const cardPosition = this.getCardPosition(cardID);
-        let cardTagsString = "";
-        for(let i=0; i<cards[cardPosition].Tags.length; i++){
-            cardTagsString = cardTagsString + cards[cardPosition].Tags[i] + "";
-        }
         this.setState({
             cardTitle: cards[cardPosition]["Title"],
             showBoard: true,
@@ -173,7 +178,7 @@ export default class Board extends Component {
             cardHistory: cards[cardPosition]["History"],
             cardViewed: cardPosition,
             cardColumn: cards[cardPosition]["column"],
-            cardTags: cardTagsString
+            cardTags: this.getTagString(cardPosition)
         });
     }
 
@@ -256,10 +261,11 @@ export default class Board extends Component {
     render() {
         return (
             <div className="body-wrapper" >
-                <header>
-                    <h1>Kanban Board</h1>
-                </header>
+
                 <div className="wrapper-container" style={{ display: !this.state.showBoard ? "block" : "none" }}>
+                    <header>
+                        <h1>Kanban Board</h1>
+                    </header>
                     <div className="add-column-wrapper">
                         <Button variant="primary" onClick={() => this.addNewColumn()}>
                             Add Column
@@ -271,15 +277,22 @@ export default class Board extends Component {
 
                 </div>
             <Modal show={this.state.showBoard} onHide={() => this.handleClose()}>
+                <div style={{textAlign: "center"}}>
                 <Modal.Header>
-                    <Modal.Title>Card Title: <input  name="cardTitle" value={this.state.cardTitle} onChange={this.handleChange}/></Modal.Title>
+                    <header>
+                        <h1>Card View</h1>
+                    </header>
+                    <Modal.Title>Card Title: <br/><input  name="cardTitle" value={this.state.cardTitle} onChange={this.handleChange}/></Modal.Title>
                 </Modal.Header>
-                <Modal.Body>Card Description: <textarea name="cardDesc" value={this.state.cardDesc} onChange={this.handleChange}/>                        <div>
+                <Modal.Body>
+                    Card Description: <br/><textarea name="cardDesc" value={this.state.cardDesc} onChange={this.handleChange}/>                        <div>
                     Card History:
                     <br/>
                     {cards.length!==0 && <CardHistory history={cards[this.state.cardViewed].History}/>}
+                    <br/>
                     <div>
                         Card Tags:
+                        <br/>
                         <textarea name="cardTags" value={this.state.cardTags} onChange={this.handleChange}/>
                     </div>
                 </div>
@@ -295,6 +308,7 @@ export default class Board extends Component {
                         Undo Last Change
                     </Button>
                 </Modal.Footer>
+                </div>
             </Modal>
         </div>
         )
