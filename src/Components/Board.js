@@ -140,7 +140,8 @@ export default class Board extends Component {
                                  changeColName={(column, newName) => this.changeColumnName(column, newName)}
                                  addNewCard={(column) => this.addNewCard(column)}
                                  removeColumn={(column) => this.removeColumn(column)}
-                                 deleteCard={(cardID) => this.deleteCard(cardID)}/>)
+                                 deleteCard={(cardID) => this.deleteCard(cardID)}
+                                 moveCard={(cardID, steps) => this.moveCard(cardID, steps)}/>)
         }
         return columns
     }
@@ -164,6 +165,22 @@ export default class Board extends Component {
         }
         cards = newCards;
         console.log(this.state.colNames)
+    }
+
+    moveCard(cardID, steps){
+        let cardIndex =0;
+        for(let i=0; i<cards.length; i++){
+            if(cards[i].cardID === cardID){
+                cardIndex = i;
+            }
+        }
+        const oldColumnPosition = this.state.colNames.indexOf(cards[cardIndex].column)
+        let newColumnPosition = oldColumnPosition + steps;
+        if(newColumnPosition >= 0 && newColumnPosition <= this.state.colNames.length - 1){
+            cards[cardIndex].column = this.state.colNames[newColumnPosition];
+            cards[cardIndex]["History"].push([cards[this.state.cardViewed]["Title"], cards[this.state.cardViewed]["Desc"], this.state.colNames[oldColumnPosition]])
+        }
+        this.forceUpdate();
     }
 
     render() {

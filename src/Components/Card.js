@@ -19,8 +19,14 @@ class Card extends Component{
                         <div>
                             {this.props.cardInfo.History}
                         </div>
+                        <Button variant="primary" onClick={() => this.props.moveCard(this.props.cardInfo.cardID, -1)}>
+                            Move Left
+                        </Button>
                         <Button variant="primary" onClick={() => this.props.deleteCard(this.props.cardInfo.cardID)}>
                             Delete
+                        </Button>
+                        <Button variant="primary" onClick={() => this.props.moveCard(this.props.cardInfo.cardID, 1)}>
+                            Move Right
                         </Button>
                     </div>
                 </div>

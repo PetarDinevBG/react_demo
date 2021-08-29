@@ -47,8 +47,9 @@ export default class Column extends Component{
     getCards(){
         const cards = []
         for(let i=0; i < this.props.cards.length; i++){
-            cards.push(<Card cardInfo={this.props.cards[i]} goToCardView={this.props.goToCardView}
-                             deleteCard={(cardID) => this.props.deleteCard(cardID)}/>)
+            cards.push(<Card key={this.props.cards[i].cardID} cardInfo={this.props.cards[i]} goToCardView={this.props.goToCardView}
+                             deleteCard={(cardID) => this.props.deleteCard(cardID)}
+                             moveCard={(cardID, steps) => this.props.moveCard(cardID, steps)}/>)
         }
         return cards;
     }
