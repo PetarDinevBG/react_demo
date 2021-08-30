@@ -1,7 +1,7 @@
 import {Component} from "react";
 import Column from './Column.js'
-import {Button, Modal} from "react-bootstrap";
-import CardHistory from "./CardHistory";
+import {Button} from "react-bootstrap";
+import CardView from "./CardView.js";
 
 //TODO Change data structure for columns and cards
 //TODO fix case with duplicate column names
@@ -18,13 +18,8 @@ export default class Board extends Component {
         super(props);
         this.generateTestCards(8);
         this.state = {
-            showBoard: false,
-            cardTitle: "",
-            cardDesc:"",
-            cardHistory:"",
-            cardColumn: "",
+            showModal: false,
             cardViewed: 0,
-            cardTags: "",
             colNames : initialColumns,
             newCard : false,
             filter : "",
@@ -35,7 +30,7 @@ export default class Board extends Component {
 
     handleClose(){
         this.setState({
-            showBoard: false,
+            showModal: false,
             cardViewed: 0
         });
         if(this.state.newCard === true){
@@ -44,17 +39,16 @@ export default class Board extends Component {
         this.setState({newCard: false})
     }
 
-    handleSave(){
+    handleSave(Title, Desc, Tags){
         if(this.state.newCard === false) {
             cards[this.state.cardViewed]["History"].push([cards[this.state.cardViewed]["Title"], cards[this.state.cardViewed]["Desc"], this.state.cardColumn])
         }
-
-        cards[this.state.cardViewed]["Title"] = this.state.cardTitle
-        cards[this.state.cardViewed]["Desc"] = this.state.cardDesc
-        cards[this.state.cardViewed]["Tags"] = this.state.cardTags.split(" ")
+        cards[this.state.cardViewed]["Title"] = Title
+        cards[this.state.cardViewed]["Desc"] = Desc
+        cards[this.state.cardViewed]["Tags"] = Tags.split(" ")
         this.setState({
             newCard: false,
-            showBoard: false,
+            showModal: false,
             cardViewed: 0,
             stateCards : this.filterCards(this.state.filter)});
     }
@@ -71,7 +65,7 @@ export default class Board extends Component {
         console.log(cards)
         this.setState({
             newCard: false,
-            showBoard: false,
+            showModal: false,
             cardViewed: 0,
             stateCards : this.filterCards(this.state.filter)});
     }
@@ -97,14 +91,22 @@ export default class Board extends Component {
             [event.target.name]: event.target.value,
             stateCards : this.filterCards(event.target.value)
         });
-
     }
+
     //TODO
     dragColumn(width, columnName){
         const newColPosition = width/columnWidth;
+        console.log(newColPosition)
         let newColNames = this.state.colNames.filter(e => e !== columnName)
         newColNames.splice(newColPosition, 0, columnName);
         this.setState({colNames : newColNames});
+    }
+
+    dragCard(width, cardID){
+        const newCardColumnIndex = Math.floor(width/columnWidth)
+        const oldCardColumnIndex = this.state.colNames.indexOf(cards[cardID].column)
+        const numberOfSteps = newCardColumnIndex - oldCardColumnIndex;
+        this.moveCard(cardID, numberOfSteps)
     }
 
     //TODO Fix ugly method
@@ -160,24 +162,13 @@ export default class Board extends Component {
         this.setState({stateCards : cards});
     }
 
-    getTagString(cardPosition){
-        let cardTagsString = "";
-        for(let i=0; i<cards[cardPosition].Tags.length; i++){
-            cardTagsString = cardTagsString + cards[cardPosition].Tags[i] + " ";
-        }
-        return cardTagsString
-    }
 
     //TODO fix card ID numbering
     goToCardView(cardID){
         const cardPosition = this.getCardPosition(cardID);
         this.setState({
-            cardTitle: cards[cardPosition]["Title"],
-            showBoard: true,
-            cardDesc: cards[cardPosition]["Desc"],
-            cardHistory: cards[cardPosition]["History"],
             cardViewed: cardPosition,
-            cardColumn: cards[cardPosition]["column"],
+            showModal: true,
             cardTags: this.getTagString(cardPosition)
         });
     }
@@ -189,6 +180,14 @@ export default class Board extends Component {
             }
         }
         return 0;
+    }
+
+    getTagString(cardPosition){
+        let cardTagsString = "";
+        for(let i=0; i<cards[cardPosition].Tags.length; i++){
+            cardTagsString = cardTagsString + cards[cardPosition].Tags[i] + " ";
+        }
+        return cardTagsString
     }
 
     getColCards(colName){
@@ -211,7 +210,8 @@ export default class Board extends Component {
                                  removeColumn={(column) => this.removeColumn(column)}
                                  deleteCard={(cardID) => this.deleteCard(cardID)}
                                  moveCard={(cardID, steps) => this.moveCard(cardID, steps)}
-                                 dragColumn={(width, columnName) => this.dragColumn(width, columnName)}/>)
+                                 dragColumn={(width, columnName) => this.dragColumn(width, columnName)}
+                                 dragCard={(width, cardID) => this.dragCard(width, cardID)} />)
         }
         return columns
     }
@@ -262,7 +262,7 @@ export default class Board extends Component {
         return (
             <div className="body-wrapper" >
 
-                <div className="wrapper-container" style={{ display: !this.state.showBoard ? "block" : "none" }}>
+                <div className="wrapper-container" style={{ display: !this.state.showModal ? "block" : "none" }}>
                     <header>
                         <h1>Kanban Board</h1>
                     </header>
@@ -274,42 +274,12 @@ export default class Board extends Component {
                         <input name="filter" type="text" value={this.state.filter} onChange={this.handleChange}/>
                     </div>
                     {this.getColumns()}
+                    <CardView showModal={this.state.showModal} cardViewed={this.state.cardViewed} cards={cards} noCards={cards.length === 0}
+                              handleClose={() => this.handleClose()}
+                              handleSave={(Title, Desc, Tags) => this.handleSave(Title, Desc, Tags)}
+                              handleUndo={() => this.handleUndo()}/>
+                </div>
 
-                </div>
-            <Modal show={this.state.showBoard} onHide={() => this.handleClose()}>
-                <div style={{textAlign: "center"}}>
-                <Modal.Header>
-                    <header>
-                        <h1>Card View</h1>
-                    </header>
-                    <Modal.Title>Card Title: <br/><input  name="cardTitle" value={this.state.cardTitle} onChange={this.handleChange}/></Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    Card Description: <br/><textarea name="cardDesc" value={this.state.cardDesc} onChange={this.handleChange}/>                        <div>
-                    Card History:
-                    <br/>
-                    {cards.length!==0 && <CardHistory history={cards[this.state.cardViewed].History}/>}
-                    <br/>
-                    <div>
-                        Card Tags:
-                        <br/>
-                        <textarea name="cardTags" value={this.state.cardTags} onChange={this.handleChange}/>
-                    </div>
-                </div>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => this.handleClose()}>
-                        Close
-                    </Button>
-                    <Button variant="primary" onClick={() => this.handleSave()}>
-                        Save Changes
-                    </Button>
-                    <Button variant="primary" onClick={() => this.handleUndo()}>
-                        Undo Last Change
-                    </Button>
-                </Modal.Footer>
-                </div>
-            </Modal>
         </div>
         )
     }

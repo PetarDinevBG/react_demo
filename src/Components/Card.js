@@ -8,6 +8,7 @@ class Card extends Component{
         this.state = {
             position : {x:0, y:0}
         }
+        this.handleDrag = this.handleDrag.bind(this);
     }
 
     getTagString(tags){
@@ -18,10 +19,14 @@ class Card extends Component{
         return cardTagsString
     }
 
+    handleDrag(event){
+        this.props.dragCard(event.pageX, this.props.cardInfo.cardID)
+    }
+
     //TODO Max height for description div
     render(){
         return(
-            <Draggable position={this.state.position}>
+            <Draggable position={this.state.position} onStop={this.handleDrag}>
                 <div className="card-wrapper">
                     <div className="card-body" onDoubleClick={() => this.props.goToCardView(this.props.cardInfo["cardID"])}>
                         <h3>

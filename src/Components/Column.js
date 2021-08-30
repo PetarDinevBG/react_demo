@@ -28,9 +28,8 @@ export default class Column extends Component{
     }
     //TODO Better transition here
     handleDrag(event){
-        console.log(event)
         this.props.dragColumn(event.pageX, this.props.name)
-        this.setState({position : {x:-500, y: 0}})
+        this.setState({position : {x:0, y: 0}})
     }
 
     handleOnStop(){
@@ -61,7 +60,8 @@ export default class Column extends Component{
         for(let i=0; i < this.props.cards.length; i++){
             cards.push(<Card key={this.props.cards[i].cardID} cardInfo={this.props.cards[i]} goToCardView={this.props.goToCardView}
                              deleteCard={(cardID) => this.props.deleteCard(cardID)}
-                             moveCard={(cardID, steps) => this.props.moveCard(cardID, steps)}/>)
+                             moveCard={(cardID, steps) => this.props.moveCard(cardID, steps)}
+                             dragCard={(width, cardID) => this.props.dragCard(width, cardID)} />)
         }
         return cards;
     }
