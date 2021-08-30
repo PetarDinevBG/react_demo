@@ -43,7 +43,6 @@ export default class Board extends Component {
         if(this.state.newCard === false) {
             cards[this.state.cardViewed]["History"].push([cards[this.state.cardViewed]["Title"], cards[this.state.cardViewed]["Desc"], this.state.cardColumn])
         }
-    console.log(Title, Desc, Tags)
         cards[this.state.cardViewed]["Title"] = Title
         cards[this.state.cardViewed]["Desc"] = Desc
         cards[this.state.cardViewed]["Tags"] = Tags.split(" ")
@@ -97,9 +96,17 @@ export default class Board extends Component {
     //TODO
     dragColumn(width, columnName){
         const newColPosition = width/columnWidth;
+        console.log(newColPosition)
         let newColNames = this.state.colNames.filter(e => e !== columnName)
         newColNames.splice(newColPosition, 0, columnName);
         this.setState({colNames : newColNames});
+    }
+
+    dragCard(width, cardID){
+        const newCardColumnIndex = Math.floor(width/columnWidth)
+        const oldCardColumnIndex = this.state.colNames.indexOf(cards[cardID].column)
+        const numberOfSteps = newCardColumnIndex - oldCardColumnIndex;
+        this.moveCard(cardID, numberOfSteps)
     }
 
     //TODO Fix ugly method
@@ -203,7 +210,8 @@ export default class Board extends Component {
                                  removeColumn={(column) => this.removeColumn(column)}
                                  deleteCard={(cardID) => this.deleteCard(cardID)}
                                  moveCard={(cardID, steps) => this.moveCard(cardID, steps)}
-                                 dragColumn={(width, columnName) => this.dragColumn(width, columnName)}/>)
+                                 dragColumn={(width, columnName) => this.dragColumn(width, columnName)}
+                                 dragCard={(width, cardID) => this.dragCard(width, cardID)} />)
         }
         return columns
     }
