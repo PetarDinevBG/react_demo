@@ -5,6 +5,7 @@ export default class CardHistory extends Component{
     constructor(props) {
         super(props);
         this.state = {
+            cardViewed: props.cardViewed,
             card: props.cards[props.cardViewed],
             cardTitle: props.cards[props.cardViewed].Title,
             cardDesc:props.cards[props.cardViewed].Desc,
@@ -19,6 +20,19 @@ export default class CardHistory extends Component{
         this.setState({
             [event.target.name]: event.target.value,
         });
+    }
+
+    //TODO Find a better solution to this
+    componentWillReceiveProps(nextProps, nextContext) {
+        this.setState({
+            cardViewed: nextProps.cardViewed,
+            card: nextProps.cards[nextProps.cardViewed],
+            cardTitle: nextProps.cards[nextProps.cardViewed].Title,
+            cardDesc:nextProps.cards[nextProps.cardViewed].Desc,
+            cardHistory:nextProps.cards[nextProps.cardViewed].History,
+            cardColumn: nextProps.cards[nextProps.cardViewed].column,
+            cardTags: this.getTagString(), });
+
     }
 
     getTagString(){
