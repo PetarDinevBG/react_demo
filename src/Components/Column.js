@@ -15,7 +15,6 @@ export default class Column extends Component{
         this.handleChange = this.handleChange.bind(this);
         this.handleClick = this.handleClick.bind(this);
         this.handleOnStop = this.handleOnStop.bind(this);
-        this.handleDrag = this.handleDrag.bind(this);
         this.saveColumnName = this.saveColumnName.bind(this);
     }
 
@@ -26,13 +25,10 @@ export default class Column extends Component{
     handleDoubleClick(){
         this.setState( {editColName: true});
     }
-    //TODO Better transition here
-    handleDrag(event){
-        this.props.dragColumn(event.pageX, this.props.name)
-        this.setState({position : {x:0, y: 0}})
-    }
 
-    handleOnStop(){
+    //TODO Better transition here
+    handleOnStop(event){
+        this.props.dragColumn(event.pageX, this.props.name)
         this.setState({position : {x:0, y: 0}})
     }
     handleChange(event){
@@ -51,7 +47,7 @@ export default class Column extends Component{
         if(this.state.editColName){
             return(<input name="colName" type="text" value={this.state.colName} onChange={this.handleChange} onKeyDown={this.saveColumnName}/>)
         }else{
-            return(<Draggable position={this.state.position} axis="x" grid={[100,0]} onStop={this.handleOnStop} onDrag={this.handleDrag}><h1 id="column-handle" onDoubleClick={() => this.handleDoubleClick()}>{this.state.colName}</h1></Draggable>)
+            return(<Draggable position={this.state.position} axis="x" grid={[100,0]} onStop={this.handleOnStop}><h1 id="column-handle" onDoubleClick={() => this.handleDoubleClick()}>{this.state.colName}</h1></Draggable>)
         }
     }
 

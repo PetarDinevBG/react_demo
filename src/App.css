@@ -101,3 +101,13 @@ h1 {
   text-align: center;
   padding-bottom: 20px;
 }
+
+#column-handle {
+  border-style: dashed;
+  border-width: thin;
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
+}
