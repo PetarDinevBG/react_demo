@@ -1,17 +1,18 @@
 import {Component} from "react";
 import {Button, Modal} from "react-bootstrap";
+import CardHistory from "./CardHistory";
 
-export default class CardHistory extends Component{
+export default class CardView extends Component{
     constructor(props) {
         super(props);
         this.state = {
             cardViewed: props.cardViewed,
-            card: props.cards[props.cardViewed],
+            cards: props.cards,
             cardTitle: props.cards[props.cardViewed].Title,
             cardDesc:props.cards[props.cardViewed].Desc,
             cardHistory:props.cards[props.cardViewed].History,
             cardColumn: props.cards[props.cardViewed].column,
-            cardTags: this.getTagString(),
+            cardTags: this.getTagString()
         }
         this.handleChange = this.handleChange.bind(this);
     }
@@ -32,7 +33,13 @@ export default class CardHistory extends Component{
             cardHistory:nextProps.cards[nextProps.cardViewed].History,
             cardColumn: nextProps.cards[nextProps.cardViewed].column,
             cardTags: this.getTagString(), });
+    }
 
+    getCardHistory(){
+        if(!this.props.noCards){
+            console.log(this.state.cards)
+            return(<CardHistory history={this.state.cards[this.state.cardViewed].History}/>)
+        }
     }
 
     getTagString(){
@@ -57,7 +64,7 @@ export default class CardHistory extends Component{
                         Card Description: <br/><textarea name="cardDesc" value={this.state.cardDesc} onChange={this.handleChange}/>                        <div>
                         Card History:
                         <br/>
-                        {this.props.noCards && <CardHistory history={this.state.card.History}/>}
+                        {this.getCardHistory()}
                         <br/>
                         <div>
                             Card Tags:
@@ -73,7 +80,7 @@ export default class CardHistory extends Component{
                         <Button variant="primary" onClick={() => this.props.handleSave(this.state.cardTitle, this.state.cardDesc, this.state.cardTags)}>
                             Save Changes
                         </Button>
-                        <Button variant="primary" onClick={() => this.props.handleUndo()}>
+                        <Button  onClick={() => this.props.handleUndo()}>
                             Undo Last Change
                         </Button>
                     </Modal.Footer>

@@ -169,7 +169,8 @@ export default class Board extends Component {
         this.setState({
             cardViewed: cardPosition,
             showModal: true,
-            cardTags: this.getTagString(cardPosition)
+            cardTags: this.getTagString(cardPosition),
+            cardColumn: cards[cardPosition].column
         });
     }
 
@@ -188,6 +189,15 @@ export default class Board extends Component {
             cardTagsString = cardTagsString + cards[cardPosition].Tags[i] + " ";
         }
         return cardTagsString
+    }
+
+    getCardView(){
+        if(this.state.showModal){
+        return(<CardView showModal={this.state.showModal} cardViewed={this.state.cardViewed} cards={cards} noCards={cards.length === 0}
+                                 handleClose={() => this.handleClose()}
+                                 handleSave={(Title, Desc, Tags) => this.handleSave(Title, Desc, Tags)}
+                                 handleUndo={() => this.handleUndo()}/>)
+        }
     }
 
     getColCards(colName){
@@ -251,7 +261,7 @@ export default class Board extends Component {
         }
         const oldColumnPosition = this.state.colNames.indexOf(cards[cardIndex].column)
         let newColumnPosition = oldColumnPosition + steps;
-        if(newColumnPosition >= 0 && newColumnPosition <= this.state.colNames.length - 1){
+        if(newColumnPosition >= 0 && newColumnPosition <= this.state.colNames.length - 1 && newColumnPosition!==oldColumnPosition){
             cards[cardIndex].column = this.state.colNames[newColumnPosition];
             cards[cardIndex]["History"].push([cards[cardIndex]["Title"], cards[cardIndex]["Desc"], this.state.colNames[oldColumnPosition]])
         }
@@ -274,10 +284,7 @@ export default class Board extends Component {
                         <input name="filter" type="text" value={this.state.filter} onChange={this.handleChange}/>
                     </div>
                     {this.getColumns()}
-                    <CardView showModal={this.state.showModal} cardViewed={this.state.cardViewed} cards={cards} noCards={cards.length === 0}
-                              handleClose={() => this.handleClose()}
-                              handleSave={(Title, Desc, Tags) => this.handleSave(Title, Desc, Tags)}
-                              handleUndo={() => this.handleUndo()}/>
+                    {this.getCardView()}
                 </div>
 
         </div>
